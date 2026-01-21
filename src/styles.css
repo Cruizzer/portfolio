@@ -1,0 +1,251 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: 'Merriweather', Georgia, 'Times New Roman', Times, serif; color: #0f172a; background: #f5f7fb; margin: 0; }
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* background canvas (three.js) that sits behind content */
+.background-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: var(--bg-canvas-opacity, 0.36); transition: opacity 280ms ease; }
+
+/* ensure app content stacks above the background canvas */
+.app { position: relative; z-index: 1; }
+.hero { display: flex; gap: 2rem; align-items: center; justify-content: center; padding: 2.5rem 2rem; background: transparent; min-height: 66vh; }
+.content { flex: 1; max-width: 820px; }
+.hero .content { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.content h1 { font-size: var(--type-h1); margin-bottom: 0.6rem; font-weight: 700; letter-spacing: -0.02em; }
+.content .lead { color: #555b62; margin-bottom: 1rem; font-size: var(--lead-scale); max-width: min(var(--measure), 680px); font-weight: 300; line-height: 1.6; }
+.links { display: flex; gap: 1rem; margin-top: 0.8rem; }
+.links { justify-content: center; }
+.link { color: #334155; text-decoration: none; border: 1px solid transparent; padding: 0.35rem 0.6rem; border-radius: 6px; }
+.link:hover { background: rgba(124,58,237,0.08); border-color: rgba(124,58,237,0.12); }
+.visual { width: 420px; height: 320px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg,#f8fafc,#ffffff); border-radius: 10px; box-shadow: 0 6px 20px rgba(15,23,42,0.06); }
+.main { padding: 2rem 2rem; max-width: 1600px; margin: 0 auto 3rem auto; }
+.section { margin-bottom: 3rem; }
+.section h2 { margin-bottom: 1rem; }
+
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 1.5rem; }
+.card { background: #ffffff; border-radius: 12px; padding: 1.2rem 1.4rem; box-shadow: 0 12px 30px rgba(15,23,42,0.06); border: 1px solid rgba(15,23,42,0.06); display: block; height: 100%; transition: box-shadow 220ms ease, border-color 220ms ease; overflow: hidden; position: relative; }
+
+/* Layout row: optional logo + inner content (so we can lift inner without moving the logo) */
+.card-row { display: flex; flex-direction: column; gap: 0.6rem; align-items: flex-start; width: 100%; }
+.card-inner { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; width: 100%; }
+
+/* Hover / focus: do NOT translate inner content — only increase shadow on the whole card */
+.card:hover, .card:focus-within { box-shadow: 0 22px 48px rgba(15,23,42,0.12); border-color: rgba(15,23,42,0.10); }
+.card:focus-within { outline: none; }
+.card:focus-within { outline: none; }
+.card-header { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
+.card .logo { display: flex; align-items: center; gap: 0.8rem; flex: 0 0 auto; }
+.card .logo img { height: 56px; width: auto; max-width: 120px; object-fit: contain; display: block; border-radius: 6px; flex-shrink: 0; }
+.card .logo { margin-bottom: 0.4rem; }
+.card-title { margin: 0 0 0.25rem 0; font-size: 1.05rem; }
+.card-sub { margin: 0; color: #475569; font-size: 0.95rem; }
+.card-meta { text-align: right; font-size: 0.85rem; }
+.muted { color: #64748b; font-size: 0.92rem; }
+.card-bullets { margin-top: 1rem; padding-left: 1.05rem; color: #0f172a; flex: 1 1 auto; min-width: 0; }
+.card-bullets li { margin-bottom: 0.8rem; line-height: 1.6; }
+
+/* Ensure long words/URLs wrap inside cards instead of overflowing */
+.card, .card * { word-break: break-word; overflow-wrap: anywhere; }
+.chip { display: inline-block; background: #f1f5f9; padding: 0.3rem 0.5rem; border-radius: 999px; margin: 0.25rem; font-size: 0.85rem; color: #0f172a; }
+.project-card .tags { margin-top: 0.7rem; }
+.small-link { color: #7c3aed; text-decoration: none; font-weight: 600; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+@media (max-width: 780px) {
+	.hero { flex-direction: column-reverse; align-items: stretch; }
+	.visual { width: 100%; height: 260px; }
+}
+
+/* Cards grid responsive rules (no timeline) */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 1.25rem; }
+
+/* Experience grid: 3 equal-height, responsive columns that expand to use available width */
+.experience-grid { grid-template-columns: repeat(3, minmax(300px, 1fr)); grid-auto-rows: 1fr; align-items: stretch; }
+
+/* Work Experience: horizontal cards stacked vertically and use more width */
+.work-experience { grid-template-columns: 1fr; gap: 1.5rem; }
+.work-experience .card { display: flex; align-items: flex-start; gap: 1.25rem; padding: 1.2rem 1.6rem; }
+.work-experience .card-row { flex-direction: row; align-items: flex-start; gap: 1rem; }
+.work-experience .card .logo { margin-bottom: 0; margin-right: 1rem; }
+.work-experience .card .logo { width: 200px; height: 120px; flex: 0 0 200px; display: flex; align-items: center; justify-content: center; margin-right: 1rem; }
+.work-experience .card .logo img { max-height: 100%; max-width: 100%; object-fit: contain; display: block; }
+
+/* Make ACTS logo slightly larger and square while keeping the logo tile the same size */
+.card.accent-acts .logo img { width: 96px; height: 96px; object-fit: contain; border-radius: 6px; }
+.work-experience .card-inner { width: 100%; }
+
+@media (max-width: 900px) {
+  .work-experience .card { flex-direction: column; align-items: flex-start; }
+  .work-experience .card-row { flex-direction: column; align-items: flex-start; }
+  .work-experience .card .logo img { height: 56px; }
+}
+
+/* Disable lift effect on touch / small screens to avoid layout shift */
+@media (max-width: 780px) {
+  .card:hover, .card:focus-within { transform: none; box-shadow: 0 12px 30px rgba(15,23,42,0.06); }
+}
+
+@media (max-width: 900px) {
+  .hero { flex-direction: column-reverse; align-items: stretch; }
+  .visual { width: 100%; height: 260px; }
+  .cards-grid { grid-template-columns: 1fr; gap: 1rem; }
+  /* On small screens, allow overlay to cover full card (logo stacked above) */
+  .work-experience .card::before { inset: 0; }
+}
+
+/* ---- Design polish overrides and accents ---- */
+:root {
+  --accent: #7c3aed;
+  --accent-2: #5b21b6;
+  --muted: #64748b;
+  --card-bg: #ffffff;
+  /* Typographic rhythm and scale */
+  --type-h1: 2.6rem;
+  --type-h2: 1.6rem;
+  --type-body: 1.05rem;
+  --lead-scale: 1.02rem;
+  --measure: 62ch;
+  --bg-canvas-opacity: 0.36; /* tweak to make Maze background subtler (0 = invisible, 1 = opaque) */
+  --trimble-rgb: 0,99,163; /* #0063A3 */
+  --siemens-rgb: 0,154,154; /* #009A9A */
+  --acts-rgb: 162,16,1; /* #A21001 */
+}
+
+/* visual container subtle gradient + border */
+.visual {
+  border: 1px solid rgba(124,58,237,0.06);
+  background: linear-gradient(180deg, rgba(124,58,237,0.03), rgba(124,58,237,0.02));
+  backdrop-filter: blur(2px);
+}
+
+/* main padding transition for large screens */
+.main { transition: padding 220ms ease; }
+
+/* Hero typography accents */
+.hero .content h1 { font-size: 2.6rem; line-height: 1.05; letter-spacing: -0.02em; }
+.hero .content .lead { color: var(--muted); font-size: 1.05rem; }
+.hero .content h1 .name-accent { background: linear-gradient(90deg,var(--accent),var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* avatar / brand card in header */
+.brand-card { width: 160px; height: 160px; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; background: transparent; box-shadow: 0 10px 26px rgba(15,23,42,0.08); border: 1px solid rgba(15,23,42,0.04); margin: 0 0 0.9rem 0; }
+.avatar { width: 150px; height: 150px; object-fit: cover; border-radius: 50%; display: block; opacity: 1; }
+
+/* translucent card that covers avatar + text to separate from background */
+.intro { display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.88); padding: 1.6rem 2rem; border-radius: 14px; box-shadow: 0 20px 48px rgba(15,23,42,0.10); border: 1px solid rgba(15,23,42,0.06); backdrop-filter: blur(6px); max-width: 760px; }
+
+@media (max-width: 780px) {
+  .intro { padding: 1rem; margin: 0 0.5rem; border-radius: 12px; }
+}
+
+/* Link / CTA styling */
+.link { display: inline-block; padding: 0.45rem 0.8rem; border-radius: 8px; background: transparent; border: 1px solid rgba(124,58,237,0.08); color: var(--accent-2); transition: background 180ms ease, color 180ms ease, transform 120ms ease; }
+.link:hover { background: linear-gradient(90deg, rgba(124,58,237,0.08), rgba(91,33,182,0.06)); color: #fff; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(91,33,182,0.06); }
+
+/* Card header polish */
+.card-header { padding-bottom: 0.6rem; border-bottom: 1px solid rgba(15,23,42,0.03); }
+.card-title { font-size: 1.12rem; font-weight: 700; margin-bottom: 0.15rem; font-family: 'Merriweather', Georgia, serif; }
+.card-sub { margin: 0; color: #475569; font-size: 0.95rem; opacity: 0.9; font-style: italic; }
+.card-meta { text-align: right; font-size: 0.85rem; }
+
+/* Chips refinement */
+.chip { background: linear-gradient(90deg, rgba(124,58,237,0.08), rgba(91,33,182,0.06)); padding: 0.32rem 0.55rem; border-radius: 999px; color: var(--accent-2); font-weight: 600; font-family: 'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace; font-size: 0.86rem; }
+.chip:hover { box-shadow: 0 8px 18px rgba(124,58,237,0.06); }
+
+/* Project card spacing */
+.project-card .tags { margin-top: 0.85rem; }
+
+/* Slight layout increase on very wide screens */
+@media (min-width: 1200px) {
+  .main { padding-left: 4rem; padding-right: 4rem; }
+}
+
+/* Focus visibility */
+
+.card-paragraph { margin-top: 0.9rem; color: #0f172a; line-height: 1.7; font-size: var(--type-body); }
+
+/* Headings */
+h2, .section h2 { font-family: 'Merriweather', serif; font-weight: 700; font-size: var(--type-h2); margin-bottom: 1rem; color: #0b1220; }
+
+/* Code and monospace elements */
+code, pre, .chip { font-family: 'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace; }
+
+/* Paragraphs and list readability */
+p, li { font-size: var(--type-body); color: #0f172a; line-height: 1.7; }
+
+.card:focus-within { box-shadow: 0 26px 60px rgba(15,23,42,0.12); border-color: rgba(124,58,237,0.12); }
+
+/* Accent overlay hover effect (card background changes via an animated overlay) */
+:root {
+  --trimble-color: 0,120,215;
+  --siemens-color: 0,180,80;
+  --acts-color: 214,48,49;
+}
+
+/* overlay element that scales to fill the card body on hover (reduced intensity) */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0; /* default full card, but will be overridden for work-experience */
+  background: transparent;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 520ms cubic-bezier(.2,.9,.2,1), opacity 520ms ease;
+  opacity: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.card .card-inner { position: relative; z-index: 1; }
+.card .logo { position: relative; z-index: 2; }
+
+/* Per-accent overlay color variables (use the exact brand colours you provided, with low alpha) */
+.card.accent-trimble { --overlay-color: rgba(var(--trimble-rgb), 0.92); }
+.card.accent-siemens { --overlay-color: rgba(var(--siemens-rgb), 0.92); }
+.card.accent-acts { --overlay-color: rgba(var(--acts-rgb), 0.92); }
+
+/* for work-experience cards, confine the overlay to the right side (leave logo area untouched) */
+.work-experience .card::before { inset: 0 0 0 240px; transform-origin: left center; }
+
+/* when hovered, expand the overlay and tint the card body; text colors invert for contrast */
+.card.accent-trimble:hover::before,
+.card.accent-siemens:hover::before,
+.card.accent-acts:hover::before {
+  background: var(--overlay-color);
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+/* Invert text color more subtly to keep legibility without full white */
+.card.accent-trimble:hover .card-title,
+.card.accent-trimble:hover .card-sub,
+.card.accent-trimble:hover .card-paragraph,
+.card.accent-trimble:hover .chip {
+  color: rgba(255,255,255,0.95);
+}
+.card.accent-siemens:hover .card-title,
+.card.accent-siemens:hover .card-sub,
+.card.accent-siemens:hover .card-paragraph,
+.card.accent-siemens:hover .chip {
+  color: rgba(255,255,255,0.95);
+}
+.card.accent-acts:hover .card-title,
+.card.accent-acts:hover .card-sub,
+.card.accent-acts:hover .card-paragraph,
+.card.accent-acts:hover .chip {
+  color: rgba(255,255,255,0.95);
+}
+
+/* chips when overlayed become semi-transparent white for contrast */
+.card.accent-trimble:hover .chip,
+.card.accent-siemens:hover .chip,
+.card.accent-acts:hover .chip {
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.95);
+  box-shadow: none;
+}
+
+/* small refinement: make .content h1 margin smaller for compactness */
+.content h1 { margin-bottom: 0.25rem; }
+
+/* end design polish */
